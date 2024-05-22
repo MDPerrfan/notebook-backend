@@ -16,6 +16,7 @@ router.post(
     ],
 
     async(req, res) => {
+        //If there are errors returns bad request and the error
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -49,6 +50,47 @@ router.post(
             const authToken = jwt.sign(data, JWT_SECRET);
             res.status(201).json({ authToken });
 
+        } catch (error) {
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
+);
+
+// Authenticate a User using: POST "/api/auth/login". No login required.
+router.post(
+    '/login', [
+        body('email').isEmail().withMessage('Invalid email address'),
+        body('password').exists().withMessage('Password cannot be blank')
+    ],
+    async(req, res) => {
+        // If there are errors, return bad request and the error messages
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { email, password } = req.body;
+        try {
+            // Find user by email
+            let user = await User.findOne({ email });
+            if (!user) {
+                return res.status(400).json({ error: "Please provide correct credentials!" });
+            }
+
+            // Compare password
+            const passwordCompare = await bcrypt.compare(password, user.password);
+            if (!passwordCompare) {
+                return res.status(400).json({ error: "Please provide correct credentials!" });
+            }
+
+            // Generate JWT token
+            const data = {
+                user: {
+                    id: user.id
+                }
+            };
+            const authToken = jwt.sign(data, JWT_SECRET);
+            res.status(200).json({ authToken });
         } catch (error) {
             res.status(500).json({ error: "Internal Server Error" });
         }
