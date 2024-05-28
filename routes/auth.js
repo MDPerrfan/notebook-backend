@@ -68,7 +68,7 @@ router.post(
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
         }
-
+        let success = false;
         const { email, password } = req.body;
         try {
             // Find user by email
@@ -81,6 +81,7 @@ router.post(
             const passwordCompare = await bcrypt.compare(password, user.password);
             if (!passwordCompare) {
                 return res.status(400).json({ error: "Please provide correct credentials!" });
+                success = false;
             }
 
             // Generate JWT token
@@ -90,6 +91,7 @@ router.post(
                 }
             };
             const authToken = jwt.sign(data, JWT_SECRET);
+            success = true;
             res.status(200).json({ authToken });
         } catch (error) {
             res.status(500).json({ error: "Internal Server Error" });
@@ -97,7 +99,7 @@ router.post(
     }
 );
 
-//ROUTE:3 Get logged in user "details /api/auth/getuser" required login.
+//ROUTE:3 Get logged in user details: POST "/api/auth/getuser" required login.
 router.post(
     '/getuser', fetchuser,
     async(req, res) => {
