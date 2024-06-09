@@ -32,8 +32,13 @@ router.post('/addnotes', fetchuser, [
 //ROUTE:2 Get all the notes using: GET "/api/auth/fetchallnotes".Login required
 
 router.get('/fetchallnotes', fetchuser, async(req, res) => {
-    const notes = await Notes.find({ user: req.user.id });
-    res.json(notes)
+    try {
+        const notes = await Notes.find({ user: req.user.id });
+        res.json(notes)
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send("Internal Server Error");
+    }
 })
 
 // ROUTE:3 Updating an existing note: PUT "/api/notes/updatenote/:id". Login required
