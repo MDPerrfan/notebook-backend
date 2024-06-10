@@ -94,7 +94,7 @@ router.post(
         try {
             const userID = req.user.id;
             const user = await User.findById(userID).select("-password");
-            res.status(200).json({ success: true, user });
+            res.status(200).json({ success: true, user, name: user.name });
         } catch (error) {
             res.status(500).json({ success: false, error: "Internal Server Error" });
         }
